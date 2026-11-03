@@ -1,0 +1,10 @@
+{
+  "name": "B-H",
+  "description": "BH Chat - Chat de voz con dictado y texto a voz",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
