@@ -1,120 +1,94 @@
-# 🎙️ Bitácora Hablada 2.0
+# 🎙️ BH Chat
 
-> **Escribe · Escucha · Guarda**  
-> Una aplicación web progresiva (**PWA**) y moderna para la captura rápida, dictado por voz, organización inteligente y lectura en voz alta de notas personales y profesionales.
+> **Dictado y texto a voz**  
+> Una aplicación web progresiva (**PWA**) rápida, minimalista y local-first para interactuar con la voz en formato de chat. Dos funciones esenciales sin distracciones: **dictado (voz a texto)** y **texto a voz (síntesis de audio)**.
 
-Diseñada con filosofía **Local-First**, incluye persistencia en el dispositivo, soporte sin conexión, un asistente de productividad impulsado por **Google Gemini** y un diseño editorial con modo claro y oscuro.
+Diseñada con filosofía **Local-First**, funciona completamente en el dispositivo sin servidores externos ni cuentas de usuario, cuenta con soporte sin conexión a internet y una interfaz inspirada en aplicaciones de mensajería con modo claro y oscuro automático.
 
 ---
 
 ## ✨ Características Principales
 
-### 🎙️ Dictado por Voz Inteligente (Mobile & Desktop)
-- **Transcripción en tiempo real** mediante la Web Speech API (`SpeechRecognition`).
-- **Motor anti-duplicación móvil**: Filtro especializado para corregir comportamientos de navegadores móviles (Chrome Android / WebKit iOS), eliminando repeticiones involuntarias y desfases de audio.
-- Compatible con dictado continuo y detección de pausas naturales.
+### 🎙️ 1. Dictado por Voz (Voz a Texto)
+- **Burbuja de dictado (derecha, color verde)**: Captura las palabras habladas y las añade al hilo con la etiqueta "Dictado" y la hora correspondiente.
+- **Burbuja en vivo en tiempo real**: Mientras se habla, una burbuja temporal con un indicador pulsante muestra la transcripción parcial al instante. Al detener el micrófono, se consolida como mensaje definitivo en el historial.
+- **Motor anti-duplicación móvil**: Filtro inteligente que resuelve los desfases y fragmentos acumulativos habituales en navegadores móviles (Chrome en Android y Safari en iOS).
+- **Control intuitivo**: Botón de micrófono redondo en la barra inferior (verde en espera; rojo con anillo pulsante mientras graba).
 
-### 🏷️ Títulos Dedicados & Detección Inteligente
-- **Campo de título opcional** en la parte superior del editor para organizar tus ideas fácilmente.
-- Si no asignas un título manualmente, el sistema detecta de forma inteligente la primera línea o puedes usar el Asistente IA para sugerir uno automáticamente.
+### 🔊 2. Texto a Voz (Lectura en Voz Alta)
+- **Burbuja de texto a voz (izquierda, blanca con borde)**: Texto redactado en el compositor que se lee en voz alta al enviarse.
+- **Lectura inmediata y resaltado activo**: Al pulsar el botón de envío o presionar Enter, el sintetizador reproduce el texto y la burbuja se resalta con un borde de color mientras suena.
+- **Prevención de solapamiento**: Cancela automáticamente cualquier locución previa antes de comenzar una nueva lectura.
+- **Botón dedicado**: Botón redondo naranja de parlante en la barra inferior.
 
-### ✨ Asistente IA de Productividad (Gemini)
-Integrado directamente en el editor y respaldado por un backend seguro con `@google/genai`:
-- **✍️ Puntuar y pulir dictado**: Añade comas, puntos, mayúsculas y párrafos limpios sin alterar tus palabras ni modismos.
-- **💡 Sugerir título**: Analiza la nota y genera un título descriptivo y conciso (máximo 6 palabras).
-- **📝 Resumir ideas clave**: Sintetiza notas extensas en viñetas claras y accionables.
-- **✅ Extraer tareas pendientes**: Identifica compromisos, fechas o acciones pendientes y crea una lista de pendientes.
-- **🌐 Traductor de idiomas multilingüe**: Botón dedicado en la barra de herramientas para traducir notas a múltiples idiomas (inglés, francés, portugués, alemán, italiano, catalán, chino, japonés, ruso, árabe, español) con opciones para reemplazar texto o añadir la traducción al final en formato bilingüe.
-- **Fallback local inteligente**: En caso de no tener conexión a internet o saturación temporal del servicio, la app aplica reglas de puntuación y extracción local para no interrumpir tu flujo de trabajo.
+### 💬 3. Acciones por Mensaje
+Debajo de cada burbuja se muestran su etiqueta, hora (`HH:MM`) y tres acciones directas:
+- **🔊 Escuchar**: Vuelve a reproducir el texto en voz alta (válido tanto para burbujas de texto como de dictados).
+- **📋 Copiar**: Copia el texto al portapapeles con confirmación visual interactiva ("✓ Copiado").
+- **🗑️ Borrar**: Elimina el mensaje individual del historial local.
 
-### 🗣️ Síntesis de Voz Personalizable (Lectura en voz alta)
-- Lectura de notas con control de reproducción y ondas de voz interactivas.
-- **Filtro de género de voz**: Cambia rápidamente entre voces masculinas, femeninas o todas las disponibles en tu sistema operativo.
-- **Ajuste de tono / timbre**: Voces muy graves, graves, naturales o agudas.
-- **Botón de prueba rápida**: Escucha una muestra del tono seleccionado antes de aplicar los cambios.
+### ⚙️ 4. Panel de Ajustes Rápido
+Accede mediante el ícono de deslizadores en la cabecera para configurar:
+- **Voz**: Selección entre las voces en español disponibles en el sintetizador del dispositivo, con opción *"Automática"*.
+- **Velocidad de habla**: Modos Lenta (`0.8x`), Normal (`1.0x`) o Rápida (`1.2x`).
+- **Idioma de dictado**: Selector de variante regional (`es-CL` por defecto, más `es-ES`, `es-MX`, `es-US` y `en-US`).
+- Las preferencias se memorizan automáticamente en el navegador.
 
-### 📁 Organización y Gestión de Notas
-- **Carpetas personalizables**: Crea y organiza notas por proyectos, temas o áreas personales.
-- **Papelera de reciclaje**: Recupera notas eliminadas o vacíala definitivamente cuando lo desees.
-- **Mover notas**: Mueve notas entre carpetas con un solo toque desde el menú contextual.
-- **Vistas adaptables**: Alterna entre **Vista previa detallada** (con extracto y estadísticas) y **Vista compacta de lista**.
-- **Ordenamiento flexible**: Ordena tus notas por fecha reciente, más antigua o alfabético (A-Z).
-- **Búsqueda instantánea y global**: Busca por palabras clave dentro de la carpeta activa o activa el interruptor para buscar en **todas las carpetas** simultáneamente.
+### 🗑️ 5. Vaciar Conversación
+- Botón con ícono de papelera en la cabecera que detiene cualquier reproducción o dictado en curso y borra el hilo de mensajes al instante.
 
-### 📲 Compartir en WhatsApp
-- Comparte el título y contenido de cualquier nota directamente en un chat o contacto de WhatsApp con un solo clic, tanto desde el editor como desde la vista previa y la configuración.
+### 🔒 6. Privacidad y Persistencia Local
+- **100% en el dispositivo**: Todos los mensajes (hasta un máximo de 200 en memoria circular) y la configuración se guardan exclusivamente en `localStorage`.
+- **Sin cuentas ni dependencias en la nube**: No requiere inicios de sesión ni llamadas a servicios externos.
+- **Renderizado seguro**: Todo el contenido se inyecta mediante `textContent` para proteger contra cualquier intento de XSS.
 
-### 📦 Copia de Seguridad y Respaldo
-- **Ubicación centralizada**: Integrada dentro del panel de **⚙️ Configuración** para mantener la barra lateral limpia y enfocada.
-- **Exportar respaldo (.json)**: Guarda todas tus carpetas y notas en un archivo seguro en tu dispositivo.
-- **Importar respaldo (.json)**: Restaura tus notas y carpetas previas sin perder la información existente.
+### 📱 7. PWA & Modo Offline
+- **Instalable**: Compatible como aplicación de escritorio y móvil en Android e iOS.
+- **Service Worker (`bh-chat-v3.0.1`)**: Almacena en caché los archivos necesarios para cargar y usar el chat incluso sin conexión a internet.
 
-### 💾 Guardado Automático (Autosave)
-- Guardado instantáneo con *debounce* en `localStorage`.
-- Opción de activar o desactivar el guardado automático según tus preferencias desde Configuración.
-
-### 📱 PWA & Modo Offline
-- **Instalable** en dispositivos móviles (Android / iOS) y computadoras de escritorio (Chrome, Edge, Safari).
-- **Service Worker** con caché inteligente para cargar la interfaz y acceder a todas tus notas incluso sin conexión a internet.
-
-### 🎨 Diseño Editorial & Accesibilidad
-- Tipografía editorial combinando **Fraunces** para títulos y **Inter** / **IBM Plex Mono** para lectura clara.
-- **Tema Claro / Oscuro**: Alterna con un solo toque; el tema seleccionado se memoriza automáticamente.
-- Animación de forma de onda (*waveform*) sincronizada con la lectura y dictado.
+### 🎨 8. Diseño Editorial y Accesibilidad
+- **Tipografías**: **Bricolage Grotesque** para títulos y **Figtree** para el cuerpo de texto.
+- **Modo Claro / Oscuro**: Botón dedicado arriba a la derecha para alternar manualmente entre modo claro y oscuro, con persistencia en `localStorage` y detección automática de la preferencia del sistema (`prefers-color-scheme`).
+- **Zonas seguras**: Respeta el área segura (`safe-area-inset`) de dispositivos móviles modernos.
+- **Accesibilidad**: Foco visible en controles interactivos, etiquetas `aria-label` descriptivas y soporte completo para `prefers-reduced-motion`.
 
 ---
 
 ## 📂 Estructura del Proyecto
 
 ```text
-bitacora-hablada/
-├── .gitignore              # Archivos y carpetas ignorados por Git
-├── index.html              # Estructura principal, modales y panel de configuración
-├── vite.config.js          # Configuración de empaquetado Vite con middleware dev
-├── server.js               # Servidor de producción Express con rate limit, trust proxy y proxy de IA
-├── server/
-│   ├── aiService.js        # Integración con Google Gen AI SDK (@google/genai)
-│   ├── fallbacks.js        # Lógica de fallback local para modo offline / sin API
-│   └── validate.js         # Validación compartida de tamaño, formato y lista blanca para /api/ai
+bh-chat/
+├── index.html              # Interfaz de usuario, cabecera, compositor y panel de ajustes
+├── vite.config.js          # Configuración de compilación con Vite
+├── server.js               # Servidor estático Express para producción
 ├── src/
-│   ├── main.js                                      # Punto de entrada y orquestador (inicialización del ciclo de vida)
-│   ├── state.js                                     # Estado global reactivo, elementos DOM y caché de notas
-│   ├── utils.js                                     # Utilidades puras (generación de IDs, formateo de fechas, paleta, escape)
-│   ├── ui.js                                        # Interfaz (menú móvil, modales de confirmación, toasts y compartir WhatsApp)
-│   ├── storage.js                                   # Persistencia Local-First con localStorage y cálculo de cuota
-│   ├── theme.js                                     # Gestión y alternancia de temas claro/oscuro
-│   ├── tts.js                                       # Síntesis de voz (Text-to-Speech), selección de voces y keep-alive
-│   ├── dictation.js                                 # Dictado por voz (Speech-to-Text) con motor anti-duplicación móvil
-│   ├── ai.js                                        # Asistente de IA (Gemini backend), modal de resultados y estado de red
-│   ├── translator.js                                # Traductor de idiomas multilingüe para el editor de notas
-│   ├── trash.js                                     # Papelera de reciclaje (eliminación lógica, restauración y purga)
-│   ├── backup.js                                    # Exportación e importación de respaldos JSON
-│   ├── undo.js                                      # Vaciado del editor con deshacer (undo) y reversión de cambios de IA
-│   ├── render-folders.js                            # Renderizado de carpetas y flyout de vista previa flotante
-│   ├── render-notes.js                              # Renderizado de notas, métricas de lectura y vista previa rápida
-│   ├── notes.js                                     # Ciclo de vida de notas (autosave debounce, búsqueda global, mover notas)
-│   ├── events.js                                    # Registro centralizado de listeners y delegación de eventos del DOM
-│   └── style.css                                    # Estilos completos, temas claro/oscuro y diseño responsivo editorial
+│   ├── main.js             # Orquestador del ciclo de vida y registro del Service Worker
+│   ├── state.js            # Estado reactivo global y referencias a elementos DOM
+│   ├── chat.js             # Renderizado del hilo, burbuja en vivo y acciones de mensaje
+│   ├── dictation.js        # Motor de reconocimiento de voz (Web Speech API)
+│   ├── tts.js              # Motor de síntesis de voz (Text-to-Speech) y resaltado activo
+│   ├── storage.js          # Persistencia en localStorage con límite de 200 mensajes
+│   ├── ui.js               # Compositor autorresizable, teclado y panel de ajustes
+│   ├── theme.js            # Sincronización del tema del sistema con meta theme-color
+│   ├── utils.js            # Formato de hora, IDs únicos y algoritmos de ensamblado de audio
+│   └── style.css           # Estilos completos, variables CSS, temas y animaciones
 ├── public/
-│   ├── manifest.json                                # Manifiesto de la PWA
-│   ├── sw.js                                        # Service Worker v2.3.1 con caché offline inteligente por stem
-│   ├── icon.svg                                     # Icono vectorial para propósitos estándar (any)
-│   ├── icon-maskable.svg                            # Icono vectorial full-bleed para propósitos maskable en Android
-│   ├── icon-192.png / icon-512.png                  # PNG reales generados desde icon.svg (purpose any)
-│   ├── icon-maskable-192.png / icon-maskable-512.png # PNG a sangre completa generados desde icon-maskable.svg
-│   └── apple-touch-icon.png                         # 180x180 para iOS
+│   ├── manifest.json       # Manifiesto PWA para instalación
+│   ├── sw.js               # Service Worker con estrategia de caché offline
+│   ├── icon.svg            # Icono vectorial estándar
+│   ├── icon-maskable.svg   # Icono vectorial adaptable (Android)
+│   ├── icon-192.png        # Icono PNG 192x192
+│   ├── icon-512.png        # Icono PNG 512x512
+│   └── apple-touch-icon.png# Icono optimizado para iOS
 ├── scripts/
-│   └── generate-icons.mjs      # Genera los PNG de la PWA: npm run icons
+│   └── generate-icons.mjs  # Utilidad opcional para rasterizar iconos PNG
 ├── tests/
-│   ├── aiService.test.js        # Pruebas unitarias de los fallbacks locales
-│   ├── aiService.client.test.js # Pruebas unitarias del cliente de IA, reintentos y centinela
-│   └── validate.test.js         # Pruebas unitarias de validación y límites de /api/ai
-├── .env.example            # Plantilla de variables de entorno (GEMINI_API_KEY, GEMINI_MODEL, TRUST_PROXY)
-├── eslint.config.js        # Configuración de ESLint (flat config)
-├── package.json            # Dependencias y scripts de ejecución
-├── package-lock.json       # Árbol de dependencias bloqueado de npm
-├── LICENSE                 # Licencia MIT (2026 Yeremy Briones Herrera)
-└── README.md               # Documentación del proyecto
+│   └── chat.test.js        # Suite de pruebas unitarias (Node.js test runner)
+├── eslint.config.js        # Configuración de ESLint
+├── package.json            # Scripts y dependencias del proyecto
+├── package-lock.json       # Árbol de dependencias bloqueado
+├── LICENSE                 # Licencia MIT
+└── README.md               # Documentación técnica
 ```
 
 ---
@@ -123,7 +97,7 @@ bitacora-hablada/
 
 ### Prerrequisitos
 - **Node.js** 18.0 o superior
-- **npm**
+- **npm** (el gestor de paquetes oficial del repositorio)
 
 ### 1. Clonar el repositorio
 ```bash
@@ -135,84 +109,43 @@ cd BITACORA-HABLADA-2.0
 ```bash
 npm install
 ```
-> **Nota:** Este proyecto usa npm. No uses bun ni yarn: el lockfile oficial es `package-lock.json`.
-
-### 3. Generar o actualizar Iconos PNG (Opcional)
-Si modificas `public/icon.svg` o `public/icon-maskable.svg`, ejecuta el siguiente script para rasterizar los PNG requeridos por la PWA e iOS:
-```bash
-npm run icons
-```
-Este comando genera automáticamente `icon-192.png`, `icon-512.png`, las versiones maskable y `apple-touch-icon.png` (180x180). Recuerda subir los PNG resultantes.
-
-### 4. Configurar variables de entorno (Opcional para Asistente IA)
-Crea un archivo `.env` basado en `.env.example`:
-```bash
-cp .env.example .env
-```
-
-Configura tus credenciales y modelo deseado si ejecutas el backend con IA:
-```env
-GEMINI_API_KEY=tu_api_key_de_gemini
-GEMINI_MODEL=gemini-3.8-flash
-TRUST_PROXY=1
-```
-- `GEMINI_API_KEY`: Clave de API de Google Gemini (inyectada automáticamente en Google AI Studio).
-- `GEMINI_MODEL`: Modelo de Gemini a emplear (por defecto `gemini-3.8-flash`).
-- `TRUST_PROXY`: Número de proxies reversos delante del servidor (1 para Cloud Run, Nginx o plataformas serverless; 0 para exposición directa). Permite que el limitador de tasa (`express-rate-limit`) calcule correctamente la IP del cliente y no la del balanceador de carga.
 
 ---
 
 ## 💻 Ejecución y Pruebas
 
 ### Modo Desarrollo (Vite)
-Para desarrollo rápido con recarga de interfaz:
+Para iniciar el entorno de desarrollo local con recarga rápida:
 ```bash
 npm run dev
 ```
-Abre en tu navegador `http://localhost:3000`.
+Accede desde el navegador en `http://localhost:3000`.
 
 ### Pruebas Unitarias
-Ejecuta la suite de pruebas nativa de Node.js para verificar los fallbacks de IA:
+Ejecuta la suite nativa de pruebas de Node.js para validar la persistencia y algoritmos de voz:
 ```bash
 npm test
 ```
 
 ### Verificación de Código (Linter)
-Verifica la calidad y sintaxis del código con ESLint:
+Valida la sintaxis y buenas prácticas con ESLint:
 ```bash
 npm run lint
 ```
 
-### Compilación y Servidor de Producción (Full-Stack)
-Para compilar la aplicación y servirla con el proxy de Express:
+### Compilación y Servidor de Producción
+Para generar los archivos optimizados y servirlos mediante Express:
 ```bash
-# 1. Compilar archivos estáticos optimizados
+# 1. Compilar los archivos estáticos en dist/
 npm run build
 
 # 2. Iniciar el servidor
 npm start
 ```
-El servidor quedará disponible en `http://localhost:3000` con soporte completo para la API de IA, protección contra abuso de tasa (`express-rate-limit`) y fallback SPA.
-
----
-
-## 🔒 Privacidad y Almacenamiento Local
-
-- **Tus datos te pertenecen**: Todas las notas y carpetas se guardan exclusivamente en el almacenamiento local de tu navegador (`localStorage`).
-- **Sin rastreo ni cuentas obligatorias**: La app funciona de forma privada y autónoma sin necesidad de registrar un usuario.
-- **Tipografías externas**: Las fuentes tipográficas (*Fraunces*, *Inter* e *IBM Plex Mono*) se descargan desde la CDN pública de Google Fonts (`fonts.googleapis.com` y `fonts.gstatic.com`).
-- **Uso de IA transparente**: El texto de las notas solo se envía al servidor cuando presionas explícitamente una de las acciones del botón **✨ Asistente IA**. Si la IA no está disponible o falla, la app aplica automáticamente una versión simplificada local sin interrumpir tu experiencia.
-
----
-
-## 🌐 Despliegue
-
-La aplicación está lista para desplegarse en:
-- **Cloud Run / Docker / VPS**: Ejecutando `npm run build && npm start`.
-- **Hosting estático (Vercel, Netlify, GitHub Pages)**: El front-end estático compilado en `dist/` puede servirse en cualquier servidor estático; las notas, dictado y lectura continuarán funcionando al 100% en modo local-first.
+El servidor quedará disponible en el puerto configurado (por defecto `http://localhost:3000`).
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia [MIT](LICENSE). Puedes usarlo, modificarlo y distribuirlo libremente.
+Este proyecto está distribuido bajo la licencia [MIT](LICENSE).

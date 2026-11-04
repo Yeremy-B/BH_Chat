@@ -26,4 +26,5 @@ export function initElements() {
   el.dictationLangSelect = document.getElementById('dictationLangSelect');
   el.clearChatBtn = document.getElementById('clearChatBtn');
   el.emptyState = document.getElementById('emptyState');
+  el.themeToggleBtn = document.getElementById('themeToggleBtn');
 }
