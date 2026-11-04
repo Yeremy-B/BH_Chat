@@ -1,5 +1,9 @@
-// BH Chat Service Worker v3.1.0
-const CACHE_NAME = 'bh-chat-v3.1.0';
+// BH Chat Service Worker v3.1.1
+const CACHE_NAME = 'bh-chat-v3.1.1';
+
+// Los assets precacheados se guardan sin cabecera Origin, pero el CSS/JS del HTML se pide con crossorigin.
+// Con Vary: Origin esas entradas no coincidían y la primera visita sin conexión salía sin estilos.
+const MATCH_OPTS = { ignoreVary: true };
 
 function assetStem(pathname) {
   const m = pathname.match(/\/assets\/(.+?)-[A-Za-z0-9_-]{8}\.(js|css)$/);
@@ -103,12 +107,12 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(async () => {
-          const cached = await caches.match(event.request);
+          const cached = await caches.match(event.request, MATCH_OPTS);
           if (cached) return cached;
           const base = self.registration.scope;
-          const cachedIndex = await caches.match(new URL('index.html', base).href);
+          const cachedIndex = await caches.match(new URL('index.html', base).href, MATCH_OPTS);
           if (cachedIndex) return cachedIndex;
-          const cachedBase = await caches.match(base);
+          const cachedBase = await caches.match(base, MATCH_OPTS);
           if (cachedBase) return cachedBase;
           return undefined;
         })
@@ -118,7 +122,7 @@ self.addEventListener('fetch', (event) => {
 
   // Stale-While-Revalidate para recursos estáticos
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, MATCH_OPTS).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then(async (networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
