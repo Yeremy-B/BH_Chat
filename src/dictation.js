@@ -1,14 +1,24 @@
 import { state, el } from './state.js';
 import { cleanSpeechChunk, stitchSpeechTranscripts, deduplicateAdjacentWords } from './utils.js';
-import { renderLiveBubble, removeLiveBubble, addMessage, setStatus } from './chat.js';
+import { renderLiveBubble, removeLiveBubble, addMessage, renderChatThread, setStatus } from './chat.js';
 import { stopSpeaking } from './tts.js';
 
 let recognition = null;
 let sessionFinalChunks = [];
+let currentSessionId = 0;
+let sessionSaved = false;
 
-const SpeechRecognitionClass = typeof window !== 'undefined'
+let SpeechRecognitionClass = typeof window !== 'undefined'
   ? (window.SpeechRecognition || window.webkitSpeechRecognition || null)
   : null;
+
+export function setSpeechRecognitionClass(cls) {
+  SpeechRecognitionClass = cls;
+}
+
+export function getCurrentSessionId() {
+  return currentSessionId;
+}
 
 export function isSpeechRecognitionSupported() {
   return SpeechRecognitionClass !== null;
@@ -46,6 +56,30 @@ export function setupDictation() {
   updateMicButtonUI();
 }
 
+export function finalizeSession(sessionId) {
+  // Ignorar si el evento pertenece a una sesión que ya no está activa
+  if (sessionId !== currentSessionId) return;
+  // Asegurar que el mensaje se guarde una sola vez por sesión
+  if (sessionSaved) return;
+  sessionSaved = true;
+
+  const finalText = (state.interimTranscript || stitchSpeechTranscripts(sessionFinalChunks) || '').trim();
+  removeLiveBubble();
+
+  if (state.isDictating && finalText) {
+    addMessage({ kind: 'dict', text: finalText });
+    setStatus('Dictado guardado.');
+  } else if (state.messages.length === 0) {
+    // Si no hubo voz y la conversación estaba vacía, restaurar el estado vacío
+    renderChatThread();
+  }
+
+  state.isDictating = false;
+  state.interimTranscript = '';
+  sessionFinalChunks = [];
+  updateMicButtonUI();
+}
+
 export function startDictation() {
   if (!isSpeechRecognitionSupported()) {
     setStatus('Dictado no disponible en este navegador. El texto a voz sí funciona.');
@@ -55,6 +89,9 @@ export function startDictation() {
   // Detener cualquier reproducción en curso para evitar retroalimentación
   stopSpeaking();
 
+  currentSessionId++;
+  const sessionId = currentSessionId;
+  sessionSaved = false;
   sessionFinalChunks = [];
   state.interimTranscript = '';
 
@@ -66,6 +103,7 @@ export function startDictation() {
     recognition.lang = state.settings.dictationLang || 'es-CL';
 
     recognition.onstart = () => {
+      if (sessionId !== currentSessionId) return;
       state.isDictating = true;
       updateMicButtonUI();
       renderLiveBubble('');
@@ -73,6 +111,7 @@ export function startDictation() {
     };
 
     recognition.onresult = (event) => {
+      if (sessionId !== currentSessionId) return;
       if (!event || !event.results) return;
 
       const finalChunks = [];
@@ -117,6 +156,7 @@ export function startDictation() {
     };
 
     recognition.onerror = (event) => {
+      if (sessionId !== currentSessionId) return;
       const err = event ? event.error : '';
       if (err === 'no-speech') {
         setStatus('No se detectó voz. Vuelve a intentarlo cuando estés listo.');
@@ -129,35 +169,24 @@ export function startDictation() {
       } else if (err !== 'aborted') {
         setStatus(`Error de dictado (${err || 'desconocido'}).`, true);
       }
-      stopDictation();
+      finalizeSession(sessionId);
     };
 
     recognition.onend = () => {
-      const finalText = (state.interimTranscript || stitchSpeechTranscripts(sessionFinalChunks) || '').trim();
-      removeLiveBubble();
-
-      if (state.isDictating && finalText) {
-        addMessage({ kind: 'dict', text: finalText });
-        setStatus('Dictado guardado.');
-      }
-
-      state.isDictating = false;
-      state.interimTranscript = '';
-      sessionFinalChunks = [];
-      updateMicButtonUI();
+      if (sessionId !== currentSessionId) return;
+      finalizeSession(sessionId);
     };
 
     recognition.start();
   } catch (err) {
     console.warn('[Dictation] Error al iniciar reconocimiento:', err);
     setStatus('No se pudo iniciar el micrófono. Revisa los permisos.', true);
-    state.isDictating = false;
-    updateMicButtonUI();
-    removeLiveBubble();
+    finalizeSession(sessionId);
   }
 }
 
-export function stopDictation() {
+export function stopDictation(targetSessionId = currentSessionId) {
+  if (targetSessionId !== currentSessionId) return;
   if (!state.isDictating) return;
 
   if (recognition) {
@@ -168,18 +197,11 @@ export function stopDictation() {
     }
   }
 
+  const sid = targetSessionId;
   // Respaldo de seguridad si onend no se dispara inmediatamente
   setTimeout(() => {
-    if (state.isDictating) {
-      const finalText = (state.interimTranscript || stitchSpeechTranscripts(sessionFinalChunks) || '').trim();
-      removeLiveBubble();
-      if (finalText) {
-        addMessage({ kind: 'dict', text: finalText });
-      }
-      state.isDictating = false;
-      state.interimTranscript = '';
-      sessionFinalChunks = [];
-      updateMicButtonUI();
+    if (sid === currentSessionId && state.isDictating && !sessionSaved) {
+      finalizeSession(sid);
     }
   }, 250);
 }

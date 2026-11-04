@@ -1,5 +1,5 @@
-// BH Chat Service Worker v3.0.1
-const CACHE_NAME = 'bh-chat-v3.0.1';
+// BH Chat Service Worker v3.1.0
+const CACHE_NAME = 'bh-chat-v3.1.0';
 
 function assetStem(pathname) {
   const m = pathname.match(/\/assets\/(.+?)-[A-Za-z0-9_-]{8}\.(js|css)$/);
@@ -32,20 +32,35 @@ async function manageAssetCache(cache, newUrl) {
   }
 }
 
-// Instalación: cachear archivos fundamentales del shell
+// Instalación: cachear archivos fundamentales del shell y assets generados
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       const base = self.registration.scope;
-      const assets = [
+      const baseAssets = [
         base,
         new URL('index.html', base).href,
         new URL('manifest.json', base).href,
         new URL('icon.svg', base).href
       ];
 
+      let precacheAssets = [];
+      try {
+        const res = await fetch(new URL('precache-manifest.json', base).href);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            precacheAssets = list.map((file) => new URL(file, base).href);
+          }
+        }
+      } catch (err) {
+        console.warn('[SW] No se pudo cargar precache-manifest.json:', err);
+      }
+
+      const allToCache = Array.from(new Set([...baseAssets, ...precacheAssets]));
+
       await Promise.allSettled(
-        assets.map((assetUrl) => cache.add(assetUrl).catch((err) => {
+        allToCache.map((assetUrl) => cache.add(assetUrl).catch((err) => {
           console.warn('[SW] No se pudo pre-cachear:', assetUrl, err);
         }))
       );
@@ -91,7 +106,11 @@ self.addEventListener('fetch', (event) => {
           const cached = await caches.match(event.request);
           if (cached) return cached;
           const base = self.registration.scope;
-          return caches.match(new URL('index.html', base).href) || caches.match(base);
+          const cachedIndex = await caches.match(new URL('index.html', base).href);
+          if (cachedIndex) return cachedIndex;
+          const cachedBase = await caches.match(base);
+          if (cachedBase) return cachedBase;
+          return undefined;
         })
     );
     return;

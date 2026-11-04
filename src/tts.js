@@ -1,6 +1,70 @@
 import { state, el } from './state.js';
 
 let keepAliveTimer = null;
+let currentUtteranceId = 0;
+
+export function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+}
+
+export function getCurrentUtteranceId() {
+  return currentUtteranceId;
+}
+
+export function splitTextForSpeech(text, maxChunkLen = 200) {
+  const clean = (text || '').trim();
+  if (!clean) return [];
+  if (clean.length <= maxChunkLen) return [clean];
+
+  const sentenceDelim = /([.?!;:\n]+)/g;
+  const parts = clean.split(sentenceDelim);
+  const rawSentences = [];
+
+  for (let i = 0; i < parts.length; i += 2) {
+    const textPart = parts[i] || '';
+    const delimPart = parts[i + 1] || '';
+    const full = (textPart + delimPart).trim();
+    if (full) rawSentences.push(full);
+  }
+
+  const chunks = [];
+  let current = '';
+
+  for (const sentence of rawSentences) {
+    if (sentence.length > maxChunkLen) {
+      if (current) {
+        chunks.push(current.trim());
+        current = '';
+      }
+      const words = sentence.split(/\s+/);
+      let wordChunk = '';
+      for (const w of words) {
+        if ((wordChunk + ' ' + w).trim().length <= maxChunkLen) {
+          wordChunk = (wordChunk ? wordChunk + ' ' : '') + w;
+        } else {
+          if (wordChunk) chunks.push(wordChunk.trim());
+          wordChunk = w;
+        }
+      }
+      if (wordChunk) {
+        current = wordChunk;
+      }
+    } else if ((current ? current + ' ' + sentence : sentence).length <= maxChunkLen) {
+      current = (current ? current + ' ' : '') + sentence;
+    } else {
+      if (current) chunks.push(current.trim());
+      current = sentence;
+    }
+  }
+
+  if (current && current.trim()) {
+    chunks.push(current.trim());
+  }
+
+  return chunks.length > 0 ? chunks : [clean];
+}
 
 function startKeepAlive() {
   stopKeepAlive();
@@ -99,6 +163,7 @@ export function populateVoices() {
 }
 
 export function updateBubbleHighlight() {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return;
   const bubbles = document.querySelectorAll('.chat-bubble');
   bubbles.forEach((b) => {
     if (state.speakingMessageId && b.dataset.id === state.speakingMessageId) {
@@ -110,6 +175,7 @@ export function updateBubbleHighlight() {
 }
 
 export function stopSpeaking() {
+  currentUtteranceId++;
   stopKeepAlive();
   if ('speechSynthesis' in window) {
     try {
@@ -127,6 +193,9 @@ export function speakText(text, messageId = null) {
 
   // Llama a cancel() antes de cada lectura para que no se superpongan
   stopSpeaking();
+
+  currentUtteranceId++;
+  const utteranceId = currentUtteranceId;
 
   const allVoices = state.voices.length > 0 ? state.voices : (window.speechSynthesis.getVoices() || []);
   const chosenName = state.settings.voice;
@@ -148,48 +217,72 @@ export function speakText(text, messageId = null) {
     }
   }
 
-  const utter = new SpeechSynthesisUtterance(clean);
-  if (selectedVoice) {
-    utter.voice = selectedVoice;
-    utter.lang = selectedVoice.lang || 'es-ES';
-  } else {
-    utter.lang = state.settings.dictationLang || 'es-ES';
-  }
-
-  utter.rate = Number(state.settings.rate) || 1.0;
-
   state.speakingMessageId = messageId;
   updateBubbleHighlight();
 
-  utter.onstart = () => {
-    startKeepAlive();
-    updateBubbleHighlight();
-  };
+  const isMobile = isMobileDevice();
+  const chunks = isMobile ? splitTextForSpeech(clean, 200) : [clean];
+  let chunkIndex = 0;
 
-  utter.onend = () => {
-    stopKeepAlive();
-    if (state.speakingMessageId === messageId) {
-      state.speakingMessageId = null;
-      updateBubbleHighlight();
+  function speakNextChunk() {
+    if (utteranceId !== currentUtteranceId) return;
+
+    if (chunkIndex >= chunks.length) {
+      stopKeepAlive();
+      if (state.speakingMessageId === messageId) {
+        state.speakingMessageId = null;
+        updateBubbleHighlight();
+      }
+      return;
     }
-  };
 
-  utter.onerror = () => {
-    stopKeepAlive();
-    if (state.speakingMessageId === messageId) {
-      state.speakingMessageId = null;
-      updateBubbleHighlight();
+    const currentChunk = chunks[chunkIndex++];
+    const utter = new SpeechSynthesisUtterance(currentChunk);
+
+    if (selectedVoice) {
+      utter.voice = selectedVoice;
+      utter.lang = selectedVoice.lang || 'es-ES';
+    } else {
+      utter.lang = state.settings.dictationLang || 'es-ES';
     }
-  };
 
-  try {
-    window.speechSynthesis.speak(utter);
-  } catch (err) {
-    console.warn('[TTS] Error al reproducir audio:', err);
-    stopKeepAlive();
-    state.speakingMessageId = null;
-    updateBubbleHighlight();
+    utter.rate = Number(state.settings.rate) || 1.0;
+
+    utter.onstart = () => {
+      if (utteranceId !== currentUtteranceId) return;
+      if (!isMobile) {
+        startKeepAlive();
+      }
+      updateBubbleHighlight();
+    };
+
+    utter.onend = () => {
+      if (utteranceId !== currentUtteranceId) return;
+      speakNextChunk();
+    };
+
+    utter.onerror = () => {
+      if (utteranceId !== currentUtteranceId) return;
+      stopKeepAlive();
+      if (state.speakingMessageId === messageId) {
+        state.speakingMessageId = null;
+        updateBubbleHighlight();
+      }
+    };
+
+    try {
+      window.speechSynthesis.speak(utter);
+    } catch (err) {
+      console.warn('[TTS] Error al reproducir audio:', err);
+      if (utteranceId === currentUtteranceId) {
+        stopKeepAlive();
+        state.speakingMessageId = null;
+        updateBubbleHighlight();
+      }
+    }
   }
+
+  speakNextChunk();
 }
 
 export function setupTTS() {

@@ -76,6 +76,9 @@ export function removeLiveBubble() {
   if (liveBubble && liveBubble.parentNode) {
     liveBubble.parentNode.removeChild(liveBubble);
   }
+  if (state.messages.length === 0 && el.emptyState) {
+    el.emptyState.style.display = 'flex';
+  }
 }
 
 /**

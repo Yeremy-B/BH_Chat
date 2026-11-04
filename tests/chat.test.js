@@ -124,3 +124,28 @@ describe('Módulo de Persistencia Local (src/storage.js)', () => {
     assert.equal(loadMessages().length, 0);
   });
 });
+
+describe('Módulo de Fragmentación TTS Móvil (src/tts.js)', () => {
+  test('splitTextForSpeech no divide textos cortos', async () => {
+    const { splitTextForSpeech } = await import('../src/tts.js');
+    const shortText = 'Hola, esto es una prueba corta.';
+    const chunks = splitTextForSpeech(shortText, 200);
+    assert.deepEqual(chunks, [shortText]);
+  });
+
+  test('splitTextForSpeech divide textos largos respetando oraciones y límite de 200 caracteres', async () => {
+    const { splitTextForSpeech } = await import('../src/tts.js');
+    const sentence1 = 'Esta es la primera oración completa de prueba que tiene suficiente contenido.';
+    const sentence2 = 'Aquí viene una segunda oración para probar el encadenamiento de fragmentos móviles.';
+    const sentence3 = 'Y finalmente una tercera oración para asegurar que la síntesis de voz no se corte en Android.';
+    const fullText = `${sentence1} ${sentence2} ${sentence3}`;
+
+    const chunks = splitTextForSpeech(fullText, 120);
+    assert.ok(chunks.length > 1);
+    for (const chunk of chunks) {
+      assert.ok(chunk.length <= 120, `El fragmento supera el límite: "${chunk}" (${chunk.length} caracteres)`);
+    }
+    // Debe contener el texto original
+    assert.equal(chunks.join(' '), fullText);
+  });
+});

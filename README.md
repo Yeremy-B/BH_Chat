@@ -44,7 +44,7 @@ Accede mediante el ícono de deslizadores en la cabecera para configurar:
 
 ### 📱 7. PWA & Modo Offline
 - **Instalable**: Compatible como aplicación de escritorio y móvil en Android e iOS.
-- **Service Worker (`bh-chat-v3.0.1`)**: Almacena en caché los archivos necesarios para cargar y usar el chat incluso sin conexión a internet.
+- **Service Worker (`bh-chat-v3.1.0`)**: Pre-cachea automáticamente los recursos del shell y los assets generados por el build (`precache-manifest.json`) en la primera visita, permitiendo que la aplicación cargue con todos sus estilos y funcionalidades sin conexión a internet.
 
 ### 🎨 8. Diseño Editorial y Accesibilidad
 - **Tipografías**: **Bricolage Grotesque** para títulos y **Figtree** para el cuerpo de texto.
@@ -142,9 +142,17 @@ npm run build
 # 2. Iniciar el servidor
 npm start
 ```
-El servidor quedará disponible en el puerto configurado (por defecto `http://localhost:3000`).
+### Scripts Disponibles en `package.json`
 
----
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Inicia el servidor de desarrollo Vite en `0.0.0.0:3000`. |
+| `npm run build` | Compila la aplicación para producción en `dist/` y genera `precache-manifest.json`. |
+| `npm start` | Inicia el servidor Node.js/Express para producción. |
+| `npm test` | Ejecuta la suite de pruebas unitarias (`node --test`). |
+| `npm run lint` | Valida el código con ESLint (`eslint .`). |
+| `npm run preview` | Previsualiza el build de producción con Vite en el puerto 3000. |
+| `npm run icons` | Genera los iconos PNG para PWA e iOS a partir de los SVG. |
 
 ## 📄 Licencia
 
